@@ -1,0 +1,103 @@
+#include "lms.h"
+
+int main()
+{
+    int choice, role;
+
+    role = login();
+
+    if(role == 0)
+        return 0;
+
+    do
+    {
+        printf("\n\n");
+        printf("##################################################\n");
+        printf("#        LIBRARY MANAGEMENT SYSTEM               #\n");
+        printf("##################################################\n");
+
+        if(role == 1) 
+        {
+            printf("\n>>>>>>>>>>>>>> ADMIN CONTROL PANEL <<<<<<<<<<<<<<\n");
+            printf("+----------------------------------------------+\n");
+            printf("|  1. Book Management                          |\n");
+            printf("|  2. Member Management                        |\n");
+            printf("|  3. Issue / Return System                    |\n");
+            printf("|  4. Reports                                  |\n");
+            printf("|  5. Logout / Exit                            |\n");
+            printf("+----------------------------------------------+\n");
+        }
+        else 
+        {
+            printf("\n>>>>>>>>>>>>>> STUDENT PANEL <<<<<<<<<<<<<<<<<<<\n");
+            printf("+----------------------------------------------+\n");
+            printf("|  1. View Books                               |\n");
+            printf("|  2. Issue / Return                           |\n");
+            printf("|  3. Logout / Exit                            |\n");
+            printf("+----------------------------------------------+\n");
+        }
+
+        printf("\n>> Enter your choice : ");
+        scanf("%d", &choice);
+
+        printf("\n----------------------------------------------\n");
+
+        if(role == 1)
+        {
+            switch(choice)
+            {
+                case 1:
+                    printf(">> Opening Book Management...\n");
+                    book();
+                    break;
+
+                case 2:
+                    printf(">> Opening Member Management...\n");
+                    member();
+                    break;
+
+                case 3:
+                    printf(">> Opening Issue/Return System...\n");
+                    issue_returnmenu();
+                    break;
+
+                case 4:
+                    printf(">> Generating Reports...\n");
+                    issue_report();
+                    break;
+
+                case 5:
+                    printf(">> Logging out... Thank you!\n");
+                    break;
+
+                default:
+                    printf("!! Invalid choice... Try again !!\n");
+            }
+        }
+        else
+        {
+            switch(choice)
+            {
+                case 1:
+                    printf(">> Displaying Books...\n");
+                    display();
+                    break;
+
+                case 2:
+                    printf(">> Opening Issue/Return...\n");
+                    issue_returnmenu();
+                    break;
+
+                case 3:
+                    printf(">> Logging out... Thank you!\n");
+                    break;
+
+                default:
+                    printf("!! Invalid choice... Try again !!\n");
+            }
+        }
+
+    } while((role==1 && choice!=5) || (role==2 && choice!=3));
+
+    return 0;
+}

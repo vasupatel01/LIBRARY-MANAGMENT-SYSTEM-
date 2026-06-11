@@ -1,0 +1,2024 @@
+#ifndef LMS_H
+#define LMS_H
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+
+struct library 
+{
+    int id;
+    char title[25];
+    char book_author[25];
+    float price;
+    int pages;
+    char category[20];
+    int year;
+    int quantity; 
+};
+struct member
+{
+    int member_id;
+    char name[25];
+    char address[50];
+    char contact[11];
+};
+struct issue
+{
+    int book_id;
+    int member_id;
+    char member_name[25];
+    char issue_date[15];
+    char return_date[15];
+    int returned;
+};
+void insert();
+void display();
+int count();
+void printline();
+void sort();
+void delete_menu();
+void search();
+void update();
+int login();
+void insert_member();
+void display_member();
+void sort_member();
+void delete_member_menu();
+void search_member();
+void update_member();
+void book();
+void member();
+void issue_book();
+void return_book();
+void issue_returnmenu();
+void issue_report();
+int isValidMobile(char mob[]);
+
+int login()
+{
+    char user[20], pass[20];
+    int count = 3;
+
+    while(count > 0)
+    {
+        printf("####################################\n");
+        printf("        LIBRARY LOGIN SYSTEM         \n");
+        printf("####################################\n");
+        
+        printf("Username: ");
+        scanf("%s", user);
+
+        printf("Password: ");
+        scanf("%s", pass);
+
+
+        if(strcmp(user, "admin") == 0 && strcmp(pass, "1234") == 0)
+        {
+            printf("Login Successful! Welcome Admin\n");
+            return 1;   
+        }
+
+        else if(strcmp(user, "student") == 0 && strcmp(pass, "1111") == 0)
+        {
+            printf("Login Successful! Welcome Student\n");
+            return 2;   
+        }
+
+        else
+        {
+            count--;
+            printf("Invalid Login! Attempts left: %d\n", count);
+        }
+    }
+
+    printf("Too many failed attempts! Exiting...\n");
+    return 0;
+}
+void insert()
+{
+    FILE *fp;
+    struct library s, temp;
+    int found = 0;
+
+    printf("\n====================================\n");
+    printf("         ADD NEW BOOK \n");
+    printf("====================================\n");
+
+    printf("Enter Book ID        : ");
+    scanf("%d", &s.id);
+
+    
+    fp = fopen("books.dat", "rb");
+    if (fp != NULL)
+    {
+        while (fread(&temp, sizeof(temp), 1, fp))
+        {
+            if (temp.id == s.id)
+            {
+                found = 1;
+                break;
+            }
+        }
+        fclose(fp);
+    }
+
+    if (found)
+    {
+        printf("\n ERROR: Book ID already exists!\n");
+        printf("====================================\n");
+        return;
+    }
+
+   
+    fp = fopen("books.dat", "ab");
+
+    printf("Enter Title          : ");
+    scanf(" %[^\n]", s.title);
+
+    printf("Enter Author         : ");
+    scanf(" %[^\n]", s.book_author);
+
+    printf("Enter Price       : ");
+    scanf("%f", &s.price);
+
+    printf("Enter Pages          : ");
+    scanf("%d", &s.pages);
+
+    printf("Enter Category       : ");
+    scanf(" %[^\n]", s.category);
+
+    printf("Enter Year           : ");
+while (1)
+{
+    scanf("%d", &s.year);
+
+    if (s.year > 0 && s.year <= 2026)
+        break;
+    else
+        printf("Invalid year! Enter valid year (1 - 2026): ");
+}
+
+    printf("Enter Quantity       : ");
+    scanf("%d", &s.quantity);
+
+    fwrite(&s, sizeof(s), 1, fp);
+    fclose(fp);
+
+    printf("\n Book inserted successfully!\n");
+    printf("====================================\n");
+}
+
+void display()
+{
+    FILE *fp;
+    struct library s;
+
+    fp = fopen("books.dat", "rb");
+
+    if (fp == NULL)
+    {
+        printf("\n====================================\n");
+        printf(" No records found!\n");
+        printf("====================================\n");
+        return;
+    }
+
+    printline();
+    printf("                                 LIBRARY BOOK LIST \n");
+    printline();
+  printf("%-5s %-25s %-25s %-10s %-8s %-15s %-8s %-8s\n",
+       "ID", "TITLE", "AUTHOR", "PRICE", "PGS", "CATEGORY", "YEAR", "QTY");
+
+printline();
+
+while (fread(&s, sizeof(s), 1, fp))
+{
+    printf("%-5d %-25.25s %-25.25s %-10.2f %-8d %-15.15s %-8d %-8d\n",
+           s.id,
+           s.title,
+           s.book_author,
+           s.price,
+           s.pages,
+           s.category,
+           s.year,
+           s.quantity);
+} 
+
+            printline();
+
+    fclose(fp);
+}
+
+int count()
+{
+    FILE *fp;
+    struct library s;
+    int c=0;
+
+    fp=fopen("books.dat","rb");
+    if(fp==NULL) return 0;
+
+    while(fread(&s,sizeof(s),1,fp)) c++;
+
+    fclose(fp);
+    return c;
+}
+
+
+void printline()
+{
+    for(int i=0; i<110; i++) printf("-");
+    printf("\n");
+}
+
+void sort()
+{
+    FILE *fp;
+    struct library *p, temp;
+    int total = count();
+
+    if (total == 0)
+    {
+        printline();
+        printf(" No records found!\n");
+        printline();       
+        return;
+    }
+
+    p = (struct library*)malloc(total * sizeof(struct library));
+    if (p == NULL)
+    {
+        printf(" Memory allocation failed!\n");
+        exit(1);
+    }
+
+    fp = fopen("books.dat", "rb");
+    if (fp == NULL)
+    {
+        printf(" Error opening file!\n");
+        exit(1);
+    }
+
+    for (int i = 0; i < total; i++)
+        fread(&p[i], sizeof(struct library), 1, fp);
+
+    fclose(fp);
+
+    int choice;
+
+    do
+    {
+        printline();
+        printf("            SORT MENU \n");
+        printline();
+        printf("1. Sort by ID\n");
+        printf("2. Sort by Title\n");
+        printf("3. Sort by Author\n");
+        printf("4. Sort by Price\n");
+        printf("5. Sort by Year\n");
+        printf("6. Sort by Pages\n");
+        printf("7. Sort by Quantity\n");
+        printf("8. Sort by Category\n");   
+        printf("9. Exit\n");               
+        printline();
+
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice)
+        {
+            case 1: 
+                for (int i = 0; i < total - 1; i++)
+                    for (int j = 0; j < total - i - 1; j++)
+                        if (p[j].id > p[j+1].id)
+                        {
+                            temp = p[j];
+                            p[j] = p[j+1];
+                            p[j+1] = temp;
+                        }
+                break;
+
+            case 2: 
+                for (int i = 0; i < total - 1; i++)
+                    for (int j = 0; j < total - i - 1; j++)
+                        if (strcmp(p[j].title, p[j+1].title) > 0)
+                        {
+                            temp = p[j];
+                            p[j] = p[j+1];
+                            p[j+1] = temp;
+                        }
+                break;
+
+            case 3: 
+                for (int i = 0; i < total - 1; i++)
+                    for (int j = 0; j < total - i - 1; j++)
+                        if (strcmp(p[j].book_author, p[j+1].book_author) > 0)
+                        {
+                            temp = p[j];
+                            p[j] = p[j+1];
+                            p[j+1] = temp;
+                        }
+                break;
+
+            case 4: 
+                for (int i = 0; i < total - 1; i++)
+                    for (int j = 0; j < total - i - 1; j++)
+                        if (p[j].price > p[j+1].price)
+                        {
+                            temp = p[j];
+                            p[j] = p[j+1];
+                            p[j+1] = temp;
+                        }
+                break;
+
+            case 5: 
+                for (int i = 0; i < total - 1; i++)
+                    for (int j = 0; j < total - i - 1; j++)
+                        if (p[j].year > p[j+1].year)
+                        {
+                            temp = p[j];
+                            p[j] = p[j+1];
+                            p[j+1] = temp;
+                        }
+                break;
+
+            case 6: 
+                for (int i = 0; i < total - 1; i++)
+                    for (int j = 0; j < total - i - 1; j++)
+                        if (p[j].pages > p[j+1].pages)
+                        {
+                            temp = p[j];
+                            p[j] = p[j+1];
+                            p[j+1] = temp;
+                        }
+                break;
+
+            case 7: 
+                for (int i = 0; i < total - 1; i++)
+                    for (int j = 0; j < total - i - 1; j++)
+                        if (p[j].quantity > p[j+1].quantity)
+                        {
+                            temp = p[j];
+                            p[j] = p[j+1];
+                            p[j+1] = temp;
+                        }
+                break;
+
+            case 8: 
+                for (int i = 0; i < total - 1; i++)
+                    for (int j = 0; j < total - i - 1; j++)
+                        if (strcmp(p[j].category, p[j+1].category) > 0)
+                        {
+                            temp = p[j];
+                            p[j] = p[j+1];
+                            p[j+1] = temp;
+                        }
+                break;
+
+            case 9:
+                printf("\n Exiting Sort Menu...\n");
+                break;
+
+            default:
+                printf("\n Invalid choice!\n");
+        }
+
+        if (choice >= 1 && choice <= 8)
+        {
+            printline();
+            printf("                               SORTED RECORDS \n");
+            printline();
+            printf("%-5s %-25s %-25s %-10s %-8s %-15s %-8s %-8s\n",
+                   "ID","TITLE","AUTHOR","PRICE","PGS","CATEGORY","YEAR","QTY");
+
+            printline();
+
+            for (int i = 0; i < total; i++)
+            {
+                printf("%-5d %-25.25s %-25.25s %-10.2f %-8d %-15.15s %-8d %-8d\n",
+                       p[i].id,
+                       p[i].title,
+                       p[i].book_author,
+                       p[i].price,
+                       p[i].pages,
+                       p[i].category,
+                       p[i].year,
+                       p[i].quantity);
+            }
+            printline();
+        }
+
+    } while (choice != 9);
+
+    free(p);
+}
+void delete_menu()
+{
+    FILE *b1, *temp;
+    struct library s1;
+    int choice, found;
+
+    do
+    {
+            printline();
+        printf("            DELETE MENU \n");
+            printline();
+        printf("1.  Delete by ID\n");
+        printf("2.  Delete by Title\n");
+        printf("3.  Delete by Author\n");
+        printf("4.  Delete by Price\n");
+        printf("5.  Delete by Pages\n");
+        printf("6.  Delete by Category\n");
+        printf("7.  Delete by Year\n");
+        printf("8.  Delete by Quantity\n");
+        printf("9.  Exit\n");
+            printline();
+
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        found = 0;
+
+        b1 = fopen("books.dat", "rb");
+        temp = fopen("temp.dat", "wb");
+
+        if (b1 == NULL || temp == NULL)
+        {
+            printf("\n Error opening file!\n");
+            return;
+        }
+
+        switch (choice)
+        {
+            case 1:
+            {
+                int id;
+                printf("Enter ID: ");
+                scanf("%d", &id);
+
+                while (fread(&s1, sizeof(s1), 1, b1))
+                {
+                    if (s1.id == id)
+                        found = 1;
+                    else
+                        fwrite(&s1, sizeof(s1), 1, temp);
+                }
+                break;
+            }
+
+            case 2:
+            {
+                char title[25];
+                printf("Enter Title: ");
+                scanf(" %[^\n]", title);
+
+                while (fread(&s1, sizeof(s1), 1, b1))
+                {
+                    if (strcmp(s1.title, title) == 0)
+                        found = 1;
+                    else
+                        fwrite(&s1, sizeof(s1), 1, temp);
+                }
+                break;
+            }
+
+            case 3:
+            {
+                char author[25];
+                printf("Enter Author: ");
+                scanf(" %[^\n]", author);
+
+                while (fread(&s1, sizeof(s1), 1, b1))
+                {
+                    if (strcmp(s1.book_author, author) == 0)
+                        found = 1;
+                    else
+                        fwrite(&s1, sizeof(s1), 1, temp);
+                }
+                break;
+            }
+
+            case 4:
+            {
+                float price;
+                printf("Enter Price: ");
+                scanf("%f", &price);
+
+                while (fread(&s1, sizeof(s1), 1, b1))
+                {
+                    if (s1.price == price)
+                        found = 1;
+                    else
+                        fwrite(&s1, sizeof(s1), 1, temp);
+                }
+                break;
+            }
+
+            case 5:
+            {
+                int pages;
+                printf("Enter Pages: ");
+                scanf("%d", &pages);
+
+                while (fread(&s1, sizeof(s1), 1, b1))
+                {
+                    if (s1.pages == pages)
+                        found = 1;
+                    else
+                        fwrite(&s1, sizeof(s1), 1, temp);
+                }
+                break;
+            }
+
+            case 6:
+            {
+                char category[20];
+                printf("Enter Category: ");
+                scanf(" %[^\n]", category);
+
+                while (fread(&s1, sizeof(s1), 1, b1))
+                {
+                    if (strcmp(s1.category, category) == 0)
+                        found = 1;
+                    else
+                        fwrite(&s1, sizeof(s1), 1, temp);
+                }
+                break;
+            }
+
+            case 7:
+            {
+                int year;
+                printf("Enter Year: ");
+                scanf("%d", &year);
+
+                while (fread(&s1, sizeof(s1), 1, b1))
+                {
+                    if (s1.year == year)
+                        found = 1;
+                    else
+                        fwrite(&s1, sizeof(s1), 1, temp);
+                }
+                break;
+            }
+
+            case 8:
+            {
+                int qty;
+                printf("Enter Quantity: ");
+                scanf("%d", &qty);
+
+                while (fread(&s1, sizeof(s1), 1, b1))
+                {
+                    if (s1.quantity == qty)
+                        found = 1;
+                    else
+                        fwrite(&s1, sizeof(s1), 1, temp);
+                }
+                break;
+            }
+
+            case 9:
+                printf("\n Exiting Delete Menu...\n");
+                fclose(b1);
+                fclose(temp);
+                return;
+
+            default:
+                printf("\n Invalid choice!\n");
+        }
+
+        fclose(b1);
+        fclose(temp);
+
+        remove("books.dat");
+        rename("temp.dat", "books.dat");
+
+        if (found)
+            printf("\n Record deleted successfully!\n");
+        else
+            printf("\n Record not found!\n");
+
+        display();
+
+    } while (choice != 9);
+}
+void search()
+{
+    FILE *b1;
+    struct library s1;
+    int choice, found;
+
+    do
+    {
+        printline();
+        printf("            SEARCH MENU \n");
+        printline();
+        printf("1.  Search by ID\n");
+        printf("2.  Search by Title\n");
+        printf("3.  Search by Author\n");
+        printf("4.  Search by Price\n");
+        printf("5.  Search by Pages\n");
+        printf("6.  Search by Category\n");
+        printf("7.  Search by Year\n");
+        printf("8.  Search by Quantity\n");
+        printf("9.  Exit\n");
+        printline();
+
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice)
+        {
+            case 1:
+            {
+                int id;
+                printf("Enter ID: ");
+                scanf("%d", &id);
+
+                b1 = fopen("books.dat", "rb");
+                if (b1 == NULL)
+                {
+                    printf("\n Error opening file!\n");
+                    exit(1);
+                }
+
+                found = 0;
+                printf("\n------ SEARCH RESULT ------\n");
+ printf("\n%-5s %-25s %-25s %-10s %-8s %-15s %-8s %-8s\n",
+                               "ID","TITLE","AUTHOR","PRICE","PGS","CATEGORY","YEAR","QTY");
+                        printline();
+                while (fread(&s1, sizeof(s1), 1, b1))
+                {
+                    if (s1.id == id)
+                    {
+                        found = 1;
+                        printf("%-5d %-25.25s %-25.25s %-10.2f %-8d %-15.15s %-8d %-8d\n",
+                               s1.id, s1.title, s1.book_author, s1.price,
+                               s1.pages, s1.category, s1.year, s1.quantity);
+                    }
+                }
+
+                fclose(b1);
+                if (!found) printf("\n Record not found!\n");
+                break;
+            }
+
+            case 2:
+            {
+                char title[25];
+                printf("Enter Title: ");
+                scanf(" %[^\n]", title);
+
+                b1 = fopen("books.dat", "rb");
+                if (b1 == NULL)
+                {
+                    printf("\n Error opening file!\n");
+                    exit(1);
+                }
+
+                found = 0;
+                printf("\n------ SEARCH RESULT ------\n");
+                 printf("\n%-5s %-25s %-25s %-10s %-8s %-15s %-8s %-8s\n",
+                               "ID","TITLE","AUTHOR","PRICE","PGS","CATEGORY","YEAR","QTY");
+                        printline();
+                while (fread(&s1, sizeof(s1), 1, b1))
+                {
+                    if (strcmp(s1.title, title) == 0)
+                    {
+                        found = 1;
+                       
+                        printf("%-5d %-25.25s %-25.25s %-10.2f %-8d %-15.15s %-8d %-8d\n",
+                               s1.id, s1.title, s1.book_author, s1.price,
+                               s1.pages, s1.category, s1.year, s1.quantity);
+                    }
+                }
+
+                fclose(b1);
+                if (!found) printf("\n Record not found!\n");
+                break;
+            }
+
+            case 3:
+            {
+                char author[25];
+                printf("Enter Author: ");
+                scanf(" %[^\n]", author);
+
+                b1 = fopen("books.dat", "rb");
+                if (b1 == NULL)
+                {
+                    printf("\n Error opening file!\n");
+                    exit(1);
+                }
+
+                found = 0;
+                printf("\n------ SEARCH RESULT ------\n");
+ printf("\n%-5s %-25s %-25s %-10s %-8s %-15s %-8s %-8s\n",
+                               "ID","TITLE","AUTHOR","PRICE","PGS","CATEGORY","YEAR","QTY");
+                        printline();
+                while (fread(&s1, sizeof(s1), 1, b1))
+                {
+                    if (strcmp(s1.book_author, author) == 0)
+                    {
+                        found = 1;
+                       
+                        printf("%-5d %-25.25s %-25.25s %-10.2f %-8d %-15.15s %-8d %-8d\n",
+                               s1.id, s1.title, s1.book_author, s1.price,
+                               s1.pages, s1.category, s1.year, s1.quantity);
+                    }
+                }
+
+                fclose(b1);
+                if (!found) printf("\n Record not found!\n");
+                break;
+            }
+
+            case 4:
+            {
+                float price;
+                printf("Enter Price: ");
+                scanf("%f", &price);
+
+                b1 = fopen("books.dat", "rb");
+                if (b1 == NULL)
+                {
+                    printf("\n Error opening file!\n");
+                    exit(1);
+                }
+
+                found = 0;
+                printf("\n------ SEARCH RESULT ------\n");
+ printf("\n%-5s %-25s %-25s %-10s %-8s %-15s %-8s %-8s\n",
+                               "ID","TITLE","AUTHOR","PRICE","PGS","CATEGORY","YEAR","QTY");
+                        printline();
+                while (fread(&s1, sizeof(s1), 1, b1))
+                {
+                    if (s1.price == price)
+                    {
+                        found = 1;
+                       
+                        printf("%-5d %-25.25s %-25.25s %-10.2f %-8d %-15.15s %-8d %-8d\n",
+                               s1.id, s1.title, s1.book_author, s1.price,
+                               s1.pages, s1.category, s1.year, s1.quantity);
+                    }
+                }
+
+                fclose(b1);
+                if (!found) printf("\n Record not found!\n");
+                break;
+            }
+
+            case 5:
+            {
+                int pages;
+                printf("Enter Pages: ");
+                scanf("%d", &pages);
+
+                b1 = fopen("books.dat", "rb");
+                if (b1 == NULL)
+                {
+                    printf("\n Error opening file!\n");
+                    exit(1);
+                }
+
+                found = 0;
+                printf("\n------ SEARCH RESULT ------\n");
+ printf("\n%-5s %-25s %-25s %-10s %-8s %-15s %-8s %-8s\n",
+                               "ID","TITLE","AUTHOR","PRICE","PGS","CATEGORY","YEAR","QTY");
+                        printline();
+                while (fread(&s1, sizeof(s1), 1, b1))
+                {
+                    if (s1.pages == pages)
+                    {
+                        found = 1;
+                       
+                        printf("%-5d %-25.25s %-25.25s %-10.2f %-8d %-15.15s %-8d %-8d\n",
+                               s1.id, s1.title, s1.book_author, s1.price,
+                               s1.pages, s1.category, s1.year, s1.quantity);
+                    }
+                }
+
+                fclose(b1);
+                if (!found) printf("\n Record not found!\n");
+                break;
+            }
+
+            case 6:
+            {
+                char category[20];
+                printf("Enter Category: ");
+                scanf(" %[^\n]", category);
+
+                b1 = fopen("books.dat", "rb");
+                if (b1 == NULL)
+                {
+                    printf("\n Error opening file!\n");
+                    exit(1);
+                }
+
+                found = 0;
+                printf("\n------ SEARCH RESULT ------\n");
+ printf("\n%-5s %-25s %-25s %-10s %-8s %-15s %-8s %-8s\n",
+                               "ID","TITLE","AUTHOR","PRICE","PGS","CATEGORY","YEAR","QTY");
+                        printline();
+                while (fread(&s1, sizeof(s1), 1, b1))
+                {
+                    if (strcmp(s1.category, category) == 0)
+                    {
+                        found = 1;
+                       
+                        printf("%-5d %-25.25s %-25.25s %-10.2f %-8d %-15.15s %-8d %-8d\n",
+                               s1.id, s1.title, s1.book_author, s1.price,
+                               s1.pages, s1.category, s1.year, s1.quantity);
+                    }
+                }
+
+                fclose(b1);
+                if (!found) printf("\n Record not found!\n");
+                break;
+            }
+
+            case 7:
+            {
+                int year;
+                printf("Enter Year: ");
+                scanf("%d", &year);
+
+                b1 = fopen("books.dat", "rb");
+                if (b1 == NULL)
+                {
+                    printf("\n Error opening file!\n");
+                    exit(1);
+                }
+
+                found = 0;
+                printf("\n------ SEARCH RESULT ------\n");
+ printf("\n%-5s %-25s %-25s %-10s %-8s %-15s %-8s %-8s\n",
+                               "ID","TITLE","AUTHOR","PRICE","PGS","CATEGORY","YEAR","QTY");
+                        printline();
+                while (fread(&s1, sizeof(s1), 1, b1))
+                {
+                    if (s1.year == year)
+                    {
+                        found = 1;
+                       
+                        printf("%-5d %-25.25s %-25.25s %-10.2f %-8d %-15.15s %-8d %-8d\n",
+                               s1.id, s1.title, s1.book_author, s1.price,
+                               s1.pages, s1.category, s1.year, s1.quantity);
+                    }
+                }
+
+                fclose(b1);
+                if (!found) printf("\n Record not found!\n");
+                break;
+            }
+
+            case 8:
+            {
+                int qty;
+                printf("Enter Quantity: ");
+                scanf("%d", &qty);
+
+                b1 = fopen("books.dat", "rb");
+                if (b1 == NULL)
+                {
+                    printf("\n Error opening file!\n");
+                    exit(1);
+                }
+
+                found = 0;
+                printf("\n------ SEARCH RESULT ------\n");
+ printf("\n%-5s %-25s %-25s %-10s %-8s %-15s %-8s %-8s\n",
+                               "ID","TITLE","AUTHOR","PRICE","PGS","CATEGORY","YEAR","QTY");
+                        printline();
+                while (fread(&s1, sizeof(s1), 1, b1))
+                {
+                    if (s1.quantity == qty)
+                    {
+                        found = 1;
+                       
+                        printf("%-5d %-25.25s %-25.25s %-10.2f %-8d %-15.15s %-8d %-8d\n",
+                               s1.id, s1.title, s1.book_author, s1.price,
+                               s1.pages, s1.category, s1.year, s1.quantity);
+                    }
+                }
+
+                fclose(b1);
+                if (!found) printf("\n Record not found!\n");
+                break;
+            }
+
+            case 9:
+                printf("\n Exiting Search Menu...\n");
+                break;
+
+            default:
+                printf("\n Invalid choice!\n");
+        }
+
+    } while (choice != 9);
+}
+void update()
+{
+    FILE *b1, *temp;
+    struct library s1;
+    int id, found = 0;
+
+    b1 = fopen("books.dat", "rb");
+    temp = fopen("temp.dat", "wb");
+
+    if (b1 == NULL || temp == NULL)
+    {
+        printf("\n Error opening file!\n");
+        return;
+    }
+
+        printline();
+    printf("            UPDATE RECORD \n");
+        printline();
+
+    printf("Enter ID to update: ");
+    scanf("%d", &id);
+
+    while (fread(&s1, sizeof(s1), 1, b1))
+    {
+        if (s1.id == id)
+        {
+            found = 1;
+
+            printf("\n Record Found!\n");
+
+            int choice;
+            do
+            {
+                    printline();
+                printf("            UPDATE MENU\n");
+                    printline();
+                printf("1. Update Title\n");
+                printf("2. Update Author\n");
+                printf("3. Update Price\n");
+                printf("4. Update Pages\n");
+                printf("5. Update Category\n");
+                printf("6. Update Year\n");
+                printf("7. Update Quantity\n");
+                printf("8. Exit Update\n");
+                    printline();
+
+                printf("Enter your choice: ");
+                scanf("%d", &choice);
+
+                switch (choice)
+                {
+                    case 1:
+                        printf("Enter new title: ");
+                        scanf(" %[^\n]", s1.title);
+                        break;
+
+                    case 2:
+                        printf("Enter new author: ");
+                        scanf(" %[^\n]", s1.book_author);
+                        break;
+
+                    case 3:
+                        printf("Enter new price: ");
+                        scanf("%f", &s1.price);
+                        break;
+
+                    case 4:
+                        printf("Enter new pages: ");
+                        scanf("%d", &s1.pages);
+                        break;
+
+                    case 5:
+                        printf("Enter new category: ");
+                        scanf(" %[^\n]", s1.category);
+                        break;
+
+                    case 6:
+                        printf("Enter new year: ");
+                        scanf("%d", &s1.year);
+                        break;
+
+                    case 7:
+                        printf("Enter new quantity: ");
+                        scanf("%d", &s1.quantity);
+                        break;
+
+                    case 8:
+                        printf("\n Exiting update menu...\n");
+                        break;
+
+                    default:
+                        printf("\n Invalid choice!\n");
+                }
+
+            } while (choice != 8);
+        }
+
+        fwrite(&s1, sizeof(s1), 1, temp);
+    }
+
+    fclose(b1);
+    fclose(temp);
+
+    remove("books.dat");
+    rename("temp.dat", "books.dat");
+
+    if (found)
+        printf("\n Record updated successfully!\n");
+    else
+        printf("\n Record not found!\n");
+
+    display();
+}
+void insert_member()
+{
+    FILE *fp;
+    struct member m, temp;
+    int found = 0;
+
+    printf("\n====================================\n");
+    printf("            INSERT MEMBER \n");
+    printf("====================================\n");
+
+    printf("Enter Member ID: ");
+    scanf("%d", &m.member_id);
+
+    fp = fopen("members.dat", "rb");
+    if(fp != NULL)
+    {
+        while(fread(&temp, sizeof(temp), 1, fp))
+        {
+            if(temp.member_id == m.member_id)
+            {
+                found = 1;
+                break;
+            }
+        }
+        fclose(fp);
+    }
+
+    if(found)
+    {
+        printf("\n Member ID exists!\n");
+        return;
+    }
+
+    fp = fopen("members.dat", "ab");
+
+    printf("Enter Name: ");
+    scanf(" %[^\n]", m.name);
+
+    printf("Enter Address: ");
+    scanf(" %[^\n]", m.address);
+
+    do {
+            printf("Enter Mobile (10 digits): ");
+            scanf("%s", m.contact);
+
+            if(!isValidMobile(m.contact))
+                printf("Invalid mobile number! Try again.\n");
+
+        } while(!isValidMobile(m.contact));
+
+    fwrite(&m, sizeof(m), 1, fp);
+    fclose(fp);
+
+    printf("\n Member Inserted Successfully!\n");
+}
+void display_member()
+{
+    FILE *fp;
+    struct member m;
+
+    fp = fopen("members.dat", "rb");
+
+    if(fp == NULL)
+    {
+        printf("No member records\n");
+        return;
+    }
+
+    printf("%-10s %-25s %-35s %-15s\n",
+       "ID","NAME","ADDRESS","CONTACT");
+
+printline();
+
+while(fread(&m, sizeof(m), 1, fp))
+{
+    printf("%-10d %-25.25s %-35.35s %-15s\n",
+           m.member_id,
+           m.name,
+           m.address,
+           m.contact);
+}
+
+    fclose(fp);
+}
+void sort_member()
+{
+    FILE *fp;
+    struct member *p, temp;
+    int total = 0;
+
+    
+    fp = fopen("members.dat", "rb");
+    if(fp == NULL)
+    {
+        printf("No records found!\n");
+        return;
+    }
+
+    while(fread(&temp, sizeof(temp), 1, fp))
+        total++;
+
+    fclose(fp);
+
+    if(total == 0)
+    {
+        printf("No records found!\n");
+        return;
+    }
+
+    
+    p = (struct member*)malloc(total * sizeof(struct member));
+    if(p == NULL)
+    {
+        printf("Memory allocation failed\n");
+        exit(1);
+    }
+
+   
+    fp = fopen("members.dat", "rb");
+    if(fp == NULL)
+    {
+        printf("Error opening file\n");
+        exit(1);
+    }
+
+    for(int i = 0; i < total; i++)
+        fread(&p[i], sizeof(struct member), 1, fp);
+
+    fclose(fp);
+
+    int choice;
+
+    do
+    {
+        printf("\n------ MEMBER SORT MENU ------\n");
+        printf("1. Sort by Member ID\n");
+        printf("2. Sort by Name\n");
+        printf("3. Sort by Address\n");
+        printf("4. Sort by Contact\n");
+        printf("5. Exit\n");
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+
+        switch(choice)
+        {
+            case 1: 
+                for(int i = 0; i < total - 1; i++)
+                    for(int j = 0; j < total - i - 1; j++)
+                        if(p[j].member_id > p[j+1].member_id)
+                        {
+                            temp = p[j];
+                            p[j] = p[j+1];
+                            p[j+1] = temp;
+                        }
+                break;
+
+            case 2: 
+                for(int i = 0; i < total - 1; i++)
+                    for(int j = 0; j < total - i - 1; j++)
+                        if(strcmp(p[j].name, p[j+1].name) > 0)
+                        {
+                            temp = p[j];
+                            p[j] = p[j+1];
+                            p[j+1] = temp;
+                        }
+                break;
+
+            case 3: 
+                for(int i = 0; i < total - 1; i++)
+                    for(int j = 0; j < total - i - 1; j++)
+                        if(strcmp(p[j].address, p[j+1].address) > 0)
+                        {
+                            temp = p[j];
+                            p[j] = p[j+1];
+                            p[j+1] = temp;
+                        }
+                break;
+
+            case 4: 
+                for(int i = 0; i < total - 1; i++)
+                    for(int j = 0; j < total - i - 1; j++)
+                        if(strcmp(p[j].contact, p[j+1].contact) > 0)
+                        {
+                            temp = p[j];
+                            p[j] = p[j+1];
+                            p[j+1] = temp;
+                        }
+                break;
+
+            case 5:
+                printf("Exiting Sort Menu...\n");
+                break;
+
+            default:
+                printf("Invalid choice!\n");
+        }
+
+        if(choice >= 1 && choice <= 4)
+        {
+            printf("\n------ SORTED MEMBERS ------\n");
+
+            printf("%-10s %-25s %-35s %-15s\n",
+       "ID","NAME","ADDRESS","CONTACT");
+
+            printline();
+
+            for(int i = 0; i < total; i++)
+{
+    printf("%-10d %-25.25s %-35.35s %-15s\n",
+           p[i].member_id,
+           p[i].name,
+           p[i].address,
+           p[i].contact);
+}
+
+printline();
+        }
+
+    } while(choice != 5);
+
+    free(p);
+}
+void delete_member_menu()
+{
+    FILE *fp, *temp;
+    struct member m;
+    int choice, found;
+
+    do
+    {
+        printf("\n MEMBER DELETE MENU \n");
+        printf(" 1. Delete by ID\n");
+        printf(" 2. Delete by Name\n");
+        printf(" 3. Delete by Address\n");
+        printf(" 4. Delete by Contact\n");
+        printf(" 5. Exit\n");
+        printf("─────────────────────────────\n");
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+
+        found = 0;
+
+        fp = fopen("members.dat", "rb");
+        temp = fopen("temp.dat", "wb");
+
+        if (fp == NULL || temp == NULL)
+        {
+            printf(" Error opening file\n");
+            return;
+        }
+
+        switch (choice)
+        {
+            case 1: 
+            {
+                int id;
+                printf("Enter Member ID: ");
+                scanf("%d", &id);
+
+                while (fread(&m, sizeof(m), 1, fp))
+                {
+                    if (m.member_id == id)
+                        found = 1;
+                    else
+                        fwrite(&m, sizeof(m), 1, temp);
+                }
+                break;
+            }
+
+            case 2: 
+            {
+                char name[25];
+                printf("Enter Name: ");
+                scanf(" %[^\n]", name);
+
+                while (fread(&m, sizeof(m), 1, fp))
+                {
+                    if (strcmp(m.name, name) == 0)
+                        found = 1;
+                    else
+                        fwrite(&m, sizeof(m), 1, temp);
+                }
+                break;
+            }
+
+            case 3: 
+            {
+                char address[50];
+                printf("Enter Address: ");
+                scanf(" %[^\n]", address);
+
+                while (fread(&m, sizeof(m), 1, fp))
+                {
+                    if (strcmp(m.address, address) == 0)
+                        found = 1;
+                    else
+                        fwrite(&m, sizeof(m), 1, temp);
+                }
+                break;
+            }
+
+            case 4: 
+            {
+                char contact[15];
+                printf("Enter Contact: ");
+                scanf(" %[^\n]", contact);
+
+                while (fread(&m, sizeof(m), 1, fp))
+                {
+                    if (strcmp(m.contact, contact) == 0)
+                        found = 1;
+                    else
+                        fwrite(&m, sizeof(m), 1, temp);
+                }
+                break;
+            }
+
+            case 5: 
+                printf(" Exiting member delete menu...\n");
+                fclose(fp);
+                fclose(temp);
+                return;
+
+            default:
+                printf(" Invalid choice\n");
+        }
+
+        fclose(fp);
+        fclose(temp);
+
+        remove("members.dat");
+        rename("temp.dat", "members.dat");
+
+        if (found)
+            printf(" Delete successfully\n");
+        else
+            printf(" Record not found\n");
+
+        display_member();
+
+    } while (choice != 5);
+}
+void search_member()
+{
+    FILE *fp;
+    struct member m;
+    int choice, found;
+
+    do
+    {
+        printf("\n MEMBER SEARCH MENU \n");
+        printf(" 1. Search by Member ID\n");
+        printf(" 2. Search by Name\n");
+        printf(" 3. Search by Address\n");
+        printf(" 4. Search by Contact\n");
+        printf(" 5. Exit\n");
+        printline();
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+
+        switch(choice)
+        {
+            
+            case 1:
+            {
+                int id;
+                printf("Enter Member ID: ");
+                scanf("%d", &id);
+
+                fp = fopen("members.dat", "rb");
+                if(fp==NULL)
+                {
+                    printf(" Error opening file\n");
+                    exit(1);
+                }
+
+                found = 0;
+                while(fread(&m, sizeof(m), 1, fp))
+                {
+                    if(m.member_id == id)
+                    {
+                        found = 1;
+                        printf("\n Member Found:\n");
+                        printf("ID: %d | Name: %s | Address: %s | Contact: %s\n",
+                               m.member_id, m.name, m.address, m.contact);
+                    }
+                }
+
+                fclose(fp);
+                if(!found) printf(" Record not found\n");
+                break;
+            }
+
+            
+            case 2:
+            {
+                char name[25];
+                printf("Enter Name: ");
+                scanf(" %[^\n]", name);
+
+                fp = fopen("members.dat", "rb");
+                if(fp==NULL)
+                {
+                    printf(" Error opening file\n");
+                    exit(1);
+                }
+
+                found = 0;
+                while(fread(&m, sizeof(m), 1, fp))
+                {
+                    if(strcmp(m.name, name) == 0)
+                    {
+                        found = 1;
+                        printf("\n Member Found:\n");
+                        printf("ID: %d | Name: %s | Address: %s | Contact: %s\n",
+                               m.member_id, m.name, m.address, m.contact);
+                    }
+                }
+
+                fclose(fp);
+                if(!found) printf(" Record not found\n");
+                break;
+            }
+
+            
+            case 3:
+            {
+                char address[50];
+                printf("Enter Address: ");
+                scanf(" %[^\n]", address);
+
+                fp = fopen("members.dat", "rb");
+                if(fp==NULL)
+                {
+                    printf(" Error opening file\n");
+                    exit(1);
+                }
+
+                found = 0;
+                while(fread(&m, sizeof(m), 1, fp))
+                {
+                    if(strcmp(m.address, address) == 0)
+                    {
+                        found = 1;
+                        printf("\n Member Found:\n");
+                        printf("ID: %d | Name: %s | Address: %s | Contact: %s\n",
+                               m.member_id, m.name, m.address, m.contact);
+                    }
+                }
+
+                fclose(fp);
+                if(!found) printf(" Record not found\n");
+                break;
+            }
+
+           
+            case 4:
+            {
+                char contact[15];
+                printf("Enter Contact: ");
+                scanf(" %[^\n]", contact);
+
+                fp = fopen("members.dat", "rb");
+                if(fp==NULL)
+                {
+                    printf(" Error opening file\n");
+                    exit(1);
+                }
+
+                found = 0;
+                while(fread(&m, sizeof(m), 1, fp))
+                {
+                    if(strcmp(m.contact, contact) == 0)
+                    {
+                        found = 1;
+                        printf("\n Member Found:\n");
+                        printf("ID: %d | Name: %s | Address: %s | Contact: %s\n",
+                               m.member_id, m.name, m.address, m.contact);
+                    }
+                }
+
+                fclose(fp);
+                if(!found) printf(" Record not found\n");
+                break;
+            }
+
+            case 5:
+                printf(" Exiting search...\n");
+                break;
+
+            default:
+                printf(" Invalid choice\n");
+        }
+
+    } while(choice != 5);
+}
+void update_member()
+{
+    FILE *fp, *temp;
+    struct member m;
+    int id, found = 0;
+
+    fp = fopen("members.dat", "rb");
+    temp = fopen("temp.dat", "wb");
+
+    if (fp == NULL || temp == NULL)
+    {
+        printf("  Error opening file\n");
+        return;
+    }
+
+    printf("  Enter Member ID to update: ");
+    scanf("%d", &id);
+
+    while (fread(&m, sizeof(m), 1, fp))
+    {
+        if (m.member_id == id)
+        {
+            found = 1;
+
+            printf("\n Record Found!\n");
+
+            int choice;
+            do
+            {
+                printline();
+                printf("        MEMBER UPDATE MENU         |\n");
+               printline();
+                printf("| 1  Update Name                     |\n");
+                printf("| 2  Update Address                  | \n");
+                printf("| 3  Update Contact                  |\n");
+                printf("| 4  Exit Update                     |\n");
+               printline();
+                printf("Enter choice: ");
+                scanf("%d", &choice);
+
+                switch (choice)
+                {
+                    case 1:
+                        printf("  Enter new name: ");
+                        scanf(" %[^\n]", m.name);
+                        break;
+
+                    case 2:
+                        printf("  Enter new address: ");
+                        scanf(" %[^\n]", m.address);
+                        break;
+
+                    case 3:
+                        printf("  Enter new contact: ");
+                        scanf(" %[^\n]", m.contact);
+                        break;
+
+                    case 4:
+                        printf(" Exiting update menu...\n");
+                        break;
+
+                    default:
+                        printf(" Invalid choice\n");
+                }
+
+            } while (choice != 4);
+        }
+
+        fwrite(&m, sizeof(m), 1, temp);
+    }
+
+    fclose(fp);
+    fclose(temp);
+
+    remove("members.dat");
+    rename("temp.dat", "members.dat");
+
+    if (found)
+        printf("\n Member updated successfully!\n");
+    else
+        printf("\n Record not found\n");
+
+    display_member();
+}
+void book()
+{
+    int choice;
+
+do
+{
+    printf("\n\n");
+    printf("##################################################\n");
+    printf("#            BOOK MANAGEMENT SYSTEM              #\n");
+    printf("##################################################\n");
+
+    printf("\n>>>>>>>>>>>>>>> BOOK MENU <<<<<<<<<<<<<<<<\n");
+    printf("+----------------------------------------------+\n");
+    printf("|  1. Insert Record                            |\n");
+    printf("|  2. Display Records                          |\n");
+    printf("|  3. Count Records                            |\n");
+    printf("|  4. Sort Records                             |\n");
+    printf("|  5. Delete Records                           |\n");
+    printf("|  6. Search Records                           |\n");
+    printf("|  7. Update Records                           |\n");
+    printf("|  8. Back to Main Menu                        |\n");
+    printf("+----------------------------------------------+\n");
+
+    printf("\n>> Enter your choice : ");
+    scanf("%d", &choice);
+
+    printf("\n----------------------------------------------\n");
+
+    switch(choice)
+    {
+        case 1:
+            printf(">> Inserting New Book Record...\n");
+            insert();
+            break;
+
+        case 2:
+            printf(">> Displaying All Records...\n");
+            display();
+            break;
+
+        case 3:
+            printf(">> Counting Records...\n");
+            printf("Total Records: %d\n", count());
+            break;
+
+        case 4:
+            printf(">> Sorting Records...\n");
+            sort();
+            break;
+
+        case 5:
+            printf(">> Deleting Record...\n");
+            delete_menu();
+            break;
+
+        case 6:
+            printf(">> Searching Record...\n");
+            search();
+            break;
+
+        case 7:
+            printf(">> Updating Record...\n");
+            update();
+            break;
+
+        case 8:
+            printf(">> Returning to Main Menu...\n");
+            break;
+
+        default:
+            printf("!! Invalid choice... Try again !!\n");
+    }
+
+} while(choice != 8);
+}
+void member()
+{
+    int choice;
+
+    do
+    {
+        printf("\n\n");
+        printf("##################################################\n");
+        printf("#           MEMBER MANAGEMENT SYSTEM             #\n");
+        printf("##################################################\n");
+
+        printf("\n>>>>>>>>>>>>>>> MEMBER MENU <<<<<<<<<<<<<<<<\n");
+        printf("+----------------------------------------------+\n");
+        printf("|  1. Insert Member                            |\n");
+        printf("|  2. Display Members                          |\n");
+        printf("|  3. Sort Members                             |\n");
+        printf("|  4. Delete Member                            |\n");
+        printf("|  5. Search Member                            |\n");
+        printf("|  6. Update Member                            |\n");
+        printf("|  7. Back to Main Menu                        |\n");
+        printf("+----------------------------------------------+\n");
+
+        printf("\n>> Enter your choice : ");
+        scanf("%d", &choice);
+
+        printf("\n----------------------------------------------\n");
+
+        switch(choice)
+        {
+            case 1:
+                printf(">> Adding New Member...\n");
+                insert_member();
+                break;
+
+            case 2:
+                printf(">> Displaying Members List...\n");
+                display_member();
+                break;
+
+            case 3:
+                printf(">> Sorting Members...\n");
+                sort_member();
+                break;
+
+            case 4:
+                printf(">> Deleting Member...\n");
+                delete_member_menu();
+                break;
+
+            case 5:
+                printf(">> Searching Member...\n");
+                search_member();
+                break;
+
+            case 6:
+                printf(">> Updating Member...\n");
+                update_member();
+                break;
+
+            case 7:
+                printf(">> Returning to Main Menu...\n");
+                break;
+
+            default:
+                printf("!! Invalid choice... Try again !!\n");
+        }
+
+    } while(choice != 7);
+}
+void issue_book()
+{
+    FILE *fb,*fi,*temp;
+    struct library b;
+    struct issue i;
+
+    int bid, mid;
+    int found = 0;
+
+    fb = fopen("books.dat","r");
+    temp = fopen("temp.dat","w");
+
+    if(fb==NULL || temp==NULL)
+    {
+        printf("opening file error\n");
+        return;
+    }
+
+    printf("Enter Book ID to issue = ");
+    scanf("%d",&bid);
+
+    printf("Enter Member ID = ");
+    scanf("%d",&mid);
+
+    while(fread(&b,sizeof(b),1,fb))
+    {
+        if(b.id == bid)
+        {
+            found = 1;
+
+            if(b.quantity <= 0)
+            {
+                printf("\nNo copies available for this book.\n");
+                fclose(fb);
+                fclose(temp);
+                return;
+            }
+
+            b.quantity--;   // reduce quantity
+        }
+        fwrite(&b,sizeof(b),1,temp);
+    }
+
+    fclose(fb);
+    fclose(temp);
+
+    fb = fopen("books.dat","w");
+    temp = fopen("temp.dat","r");
+
+    while(fread(&b,sizeof(b),1,temp))
+    {
+        fwrite(&b,sizeof(b),1,fb);
+    }
+
+    fclose(fb);
+    fclose(temp);
+
+    if(!found)
+    {
+        printf("\nBook not found.\n");
+        return;
+    }
+
+    fi = fopen("issues.dat","a");
+
+    if(fi == NULL)
+    {
+        printf("Issue file error\n");
+        return;
+    }
+
+    i.book_id = bid;
+    i.member_id = mid;
+
+    printf("Enter Member Name: ");
+    scanf(" %[^\n]", i.member_name);
+
+    printf("Enter Issue Date: ");
+    scanf("%s", i.issue_date);
+
+    strcpy(i.return_date, "NotReturned");
+    i.returned = 0;
+
+    fwrite(&i,sizeof(i),1,fi);
+
+    fclose(fi);
+
+    printf("\nBook issued successfully.\n");
+}
+void return_book()
+{
+    FILE *fi,*fb,*tempi,*tempb;
+    struct issue i;
+    struct library b;
+
+    int book_id, member_id;
+    int found = 0;
+
+    printf("Enter Book ID: ");
+    scanf("%d",&book_id);
+
+    printf("Enter Member ID: ");
+    scanf("%d",&member_id);
+
+    fi = fopen("issues.dat","r");
+    tempi = fopen("temp_issue.dat","w");
+
+    if(fi==NULL || tempi==NULL)
+    {
+        printf("Error in opening file.\n");
+        return;
+    }
+
+    while(fread(&i,sizeof(i),1,fi))
+    {
+        if(i.book_id == book_id && i.member_id == member_id && i.returned == 0)
+        {
+            found = 1;
+
+            printf("Enter Return Date: ");
+            scanf("%s", i.return_date);
+
+            i.returned = 1;
+        }
+        fwrite(&i,sizeof(i),1,tempi);
+    }
+
+    fclose(fi);
+    fclose(tempi);
+
+    if(!found)
+    {
+        printf("\nRecord not found.\n");
+        return;
+    }
+
+    fi = fopen("issues.dat","w");
+    tempi = fopen("temp_issue.dat","r");
+
+    while(fread(&i,sizeof(i),1,tempi))
+    {
+        fwrite(&i,sizeof(i),1,fi);
+    }
+
+    fclose(fi);
+    fclose(tempi);
+
+    fb = fopen("books.dat","r");
+    tempb = fopen("temp_book.dat","w");
+
+    if(fb==NULL || tempb==NULL)
+    {
+        printf("Error in opening file.\n");
+        return;
+    }
+
+    while(fread(&b,sizeof(b),1,fb))
+    {
+        if(b.id == book_id)
+        {
+            b.quantity++;   // increase quantity
+        }
+        fwrite(&b,sizeof(b),1,tempb);
+    }
+
+    fclose(fb);
+    fclose(tempb);
+
+    fb = fopen("books.dat","w");
+    tempb = fopen("temp_book.dat","r");
+
+    while(fread(&b,sizeof(b),1,tempb))
+    {
+        fwrite(&b,sizeof(b),1,fb);
+    }
+
+    fclose(fb);
+    fclose(tempb);
+
+    printf("\nBook returned successfully.\n");
+}
+void issue_returnmenu()
+{
+    int choice;
+
+    do
+    {
+        printf("\n1. Issue Book");
+        printf("\n2. Return Book");
+        printf("\n3. Exit");
+        printf("\nEnter choice: ");
+        scanf("%d", &choice);
+
+        switch(choice)
+        {
+            case 1:
+                issue_book();
+                break;
+
+            case 2:
+                return_book();
+                break;
+
+            case 3:
+                break;
+
+            default:
+                printf("Invalid choice!\n");
+        }
+
+    } while(choice != 3);
+}
+void issue_report()
+{
+    FILE *fp;
+    struct issue i;
+
+    fp = fopen("issues.dat", "rb");
+
+    if(fp == NULL)
+    {
+        printline();        
+        printf("          NO ISSUE RECORDS FOUND             \n");
+        printline(); 
+        return;
+    }
+
+    printf("\n");
+    printline();
+    printf("                         ISSUE HISTORY REPORT                             \n");
+    printline();
+    printf("%-8s %-20s %-12s %-12s %-15s\n",
+           "BOOKID", "MEMBER NAME", "ISSUE DATE", "RETURN DATE", "STATUS");
+
+    printline();
+    while(fread(&i, sizeof(i), 1, fp))
+    {
+        printf("%-8d %-20s %-12s %-12s %-15s\n",
+               i.book_id,
+               i.member_name,
+               i.issue_date,
+               i.return_date,
+               (i.returned == 0) ? "Not Returned" : "Returned");
+    }
+
+    printline();
+    fclose(fp);
+}
+int isValidMobile(char mob[])
+{
+    int i = 0;
+
+    // length must be 10
+    while(mob[i] != '\0') i++;
+    if(i != 10) return 0;
+
+    // check all digits
+    for(i = 0; mob[i] != '\0'; i++)
+    {
+        if(mob[i] < '0' || mob[i] > '9')
+            return 0;
+    }
+    return 1;
+}
+#endif
