@@ -13,13 +13,7 @@ The Library Management System is a software application designed to manage libra
 * Track available and borrowed books
 * User-friendly interface
 * Secure data management
-
-## 🛠️ Technologies Used
-
-* Programming Language: [Add your language]
-* Database: [Add your database]
-* Framework/Tools: [Add framework if applicable]
-
+* 
 ## 🚀 Installation
 
 1. Clone the repository:
